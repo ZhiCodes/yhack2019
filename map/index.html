@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>
+			YJB Data Collection
+		</title>
+		<!-- Leaflet -->
+		<link rel="stylesheet" href="lib/leaflet/leaflet.css"/>
+		<link rel="stylesheet" href="lib/leaflet/leaflet.label.css"/>
+		<link rel="stylesheet" href="lib/leaflet/leaflet-messagebox.css"/>
+		<script src="lib/leaflet/leaflet.js"></script>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCuY0Z2Nh355OLB_suLzx3ThmnptdJpy68"></script>
+		<script src="lib/leaflet/Google.js"></script>
+		<script src="lib/leaflet/leaflet.label.js"></script>
+		<script src="lib/leaflet/leaflet-messagebox.js"></script>
+		<script src="data/countries.geojson"></script>
+		<style type="text/css">
+			#map { height : 550px; }
+			.legend { background : white; line-height : 1.5em}
+			.legend i { width : 5em; float : left }
+		</style>
+	</head>
+	<body>
+		<h1><img src="Picture1.png" width="200" height="75"></img></h1>
+		<div id="map"></div>
+		<script>
+			var countriesLayer;
+			
+			function highlightFeature(e){
+				var layer = e.target;
+				layer.setStyle(
+					{
+						weight : 5,
+						color : 'black',
+						fillColor : 'white',
+						fillOpacity : 0.2
+					}
+				);
+				if(!L.Browser.ie && !L.Browser.opera){
+					layer.bringToFront();
+				}
+			}
+			
+			function resetHighlight(e){
+				countriesLayer.resetStyle(e.target);
+			}
+			
+			function zoomToFeature(e){
+				map.fitBounds(e.target.getBounds());
+			}
+			
+			function countriesOnEachFeature(feature, layer){
+				layer.bindLabel(feature.properties.name,{noHide : true});
+				layer.on(
+					{
+						mouseover : highlightFeature,
+						mouseout : resetHighlight,
+						click : zoomToFeature
+						
+					}
+				);
+			}
+			
+			function getCountryColor(id){
+				if(id < 0){
+					return 'red';
+				}else if(id < 100 && id > 0){
+					return 'green';
+				}else{
+					return 'grey';
+				}
+			}
+			
+			function countriesStyle(feature){
+				return {
+					fillColor : getCountryColor(feature.properties.id),
+					weight : 2,
+					opacity : 1,
+					color : 'white',
+					dashArray : 3,
+					fillOpacity : 0.7
+				}
+			}
+			
+			var map = L.map('map').setView([39.8283, -98.5795], 4);
+
+			var googleLayer = new L.Google();
+			map.addLayer(googleLayer);
+
+			countriesLayer = L.geoJson(
+				countries,
+				{
+					style : countriesStyle,
+					onEachFeature : countriesOnEachFeature
+					
+				}
+			).addTo(map);
+			//map.fitBounds(countriesLayer.getBounds());
+
+			var legend = L.control({position : 'bottomright'});
+			legend.onAdd = function(map){
+				var div = L.DomUtil.create('div', 'legend');
+				var labels = [
+					"Negative feedback states", 
+					"Positive feedback states", 
+					"States with no feedback available"
+				];
+				var grades = [-1, 34, 0]; //color
+				div.innerHTML = '<div><b>Rating</b></div><br>';
+				for(var i = 0; i < grades.length; i++){
+					div.innerHTML += '<i style="background:' 
+					+ getCountryColor(grades[i]) + '">&nbsp;&nbsp;</i>&nbsp;&nbsp;'
+					+ labels[i] + '<br />';
+				}
+				return div;
+			}
+			legend.addTo(map);
+			
+			//HIGHEST RATING STATES
+			var marker = L.marker([37.7952, -122.4028], {
+				title: "California"
+			}).addTo(map);
+
+			marker.bindPopup("California <br><br>Overall: 0.24<br><br>Average Positive Feedback: 0.45<br><br>Average Negative Feedback: -0.53<br><br>Positive Feedback: International Traveling <br><br> Negative Feedback: Flight Delays/Waitings ");
+
+			var marker = L.marker([40.730610, -73.935242], {
+				title: "New York"
+			}).addTo(map);
+
+			marker.bindPopup("New York <br><br>Overall: 0.11<br><br>Average Positive Feedback: 0.43<br><br>Average Negative Feedback: -0.59<br><br> Positive Feedback: International Traveling <br><br> Negative Feedback: Flight Delays/Waitings ");
+
+			var marker = L.marker([42.4072, -71.3824], {
+				title: "Massachusetts"
+			}).addTo(map);
+
+			marker.bindPopup("Massachusetts <br><br>Overall: 0.13<br><br>Average Positive Feedback: 0.41<br><br>Average Negative Feedback: -0.64<br><br>Positive Feedback: International Traveling <br><br> Negative Feedback: Gate/Seat Change ");
+
+			var marker = L.marker([27.6648, -81.5158], {
+				title: "Florida"
+			}).addTo(map);
+
+			marker.bindPopup("Florida <br><br>Overall: 0.16<br><br>Average Positive Feedback: 0.48<br><br>Average Negative Feedback: -0.56<br><br>Positive Feedback: International Traveling <br><br> Negative Feedback: Flight Delays/Waitings ");
+			
+			//LOWEST RATING STATES
+			var marker = L.marker([40.6331, -89.3985], {
+				title: "Illinois"
+			}).addTo(map);
+
+			marker.bindPopup("Illinois <br><br>Overall: -0.37<br><br>Average Positive Feedback: 0.26<br><br>Average Negative Feedback: -0.69<br><br>Positive Feedback: Customer Service <br><br> Negative Feedback: Flight Delays/Waitings ");
+
+			var marker = L.marker([37.4316, -78.6569], {
+				title: "Virginia"
+			}).addTo(map);
+
+			marker.bindPopup("Virginia <br><br>Overall: -0.02<br><br>Average Positive Sentiment: 0.38<br><br>Average Negative Feedback: -0.58<br><br>Positive Feedback: Customer Service <br><br> Negative Feedback: Flight Delays ");
+
+			var marker = L.marker([39.0458, -76.6413], {
+				title: "Maryland"
+			}).addTo(map);
+
+			marker.bindPopup("Maryland <br><br>Overall: -0.08<br><br>Average Positive Feedback: 0.44<br><br>Average Negative Feedback: -0.78<br><br>Positive Feedback: Customer Service <br><br> Negative Feedback: Flight Delays/Waitings ");
+
+			var marker = L.marker([40.0583, -74.4057], {
+				title: "New Jersey"
+			}).addTo(map);
+
+			marker.bindPopup("New Jersey <br><br>Overall: -0.04<br><br>Average Positive Feedback: 0.50<br><br>Average Negative Feedback: -0.61<br><br>Positive Feedback: Customer Service <br><br> Negative Feedback: Gate/Seat Changes ");
+
+		</script>
+	</body>
+</html>
